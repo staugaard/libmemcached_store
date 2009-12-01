@@ -55,4 +55,22 @@ class LibmemcachedStoreTest < Test::Unit::TestCase
     assert_equal false, store.options[:no_block]
     assert_equal false, store.options[:failover]
   end
+  
+  def test_should_use_local_cache
+    @store.with_local_cache do
+      @store.write('key', 'value')
+      assert_equal 'value', @store.send(:local_cache).read('key')      
+    end
+    
+    assert_equal 'value', @store.read('key')
+  end
+  
+  def test_should_read_multiple_keys    
+     @store.write('a', 1)
+     @store.write('b', 2)
+     
+     assert_equal({ 'a' => 1, 'b' => 2 }, @store.read_multi(['a', 'b', 'c']))
+     assert_equal({}, @store.read_multi([]))
+   end
+
 end

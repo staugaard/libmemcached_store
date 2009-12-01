@@ -1,4 +1,5 @@
 require 'memcached'
+#require 'read_multi'
 
 class Memcached
   # The latest version of memcached (0.11) doesn't support hostnames with dashes
@@ -29,6 +30,7 @@ module ActiveSupport
 
         @addresses = addresses
         @cache = Memcached.new(@addresses, options.reverse_merge(DEFAULT_OPTIONS))
+        extend ActiveSupport::Cache::Strategy::LocalCache
       end
 
       def read(key, options = nil)
@@ -39,6 +41,10 @@ module ActiveSupport
       rescue Memcached::Error => e
         log_error(e)
         nil
+      end
+
+      def read_multi(keys, options = nil)
+        read(keys, options) || {}
       end
 
       # Set the key to the given value. Pass :unless_exist => true if you want to
