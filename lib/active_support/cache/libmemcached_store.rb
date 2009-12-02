@@ -1,5 +1,4 @@
 require 'memcached'
-#require 'read_multi'
 
 class Memcached
   # The latest version of memcached (0.11) doesn't support hostnames with dashes
