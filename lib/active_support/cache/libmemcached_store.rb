@@ -92,12 +92,21 @@ module ActiveSupport
         raise NotImplementedError
       end
 
+      # Flushes all data in memory
       def clear
         @cache.flush
       end
 
       def stats
         @cache.stats
+      end
+
+      # Resets server connections, forcing a reconnect. This is required in
+      # cases where processes fork, but continue sharing the same memcached
+      # connection. You want to call this after the fork to make sure the
+      # new process has its own connection.
+      def reset
+        @cache.reset
       end
 
       private
