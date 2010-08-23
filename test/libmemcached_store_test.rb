@@ -37,7 +37,7 @@ class LibmemcachedStoreTest < Test::Unit::TestCase
   end
 
   def test_should_enable_server_failover_by_default
-    assert_equal true, @store.options[:failover]
+    assert_equal true, @store.options[:auto_eject_hosts]
   end
 
   def test_should_allow_configuration_of_custom_options
@@ -45,15 +45,15 @@ class LibmemcachedStoreTest < Test::Unit::TestCase
       :prefix_key => 'test',
       :distribution => :modula,
       :no_block => false,
-      :failover => false
+      :auto_eject_hosts => false
     }
 
     store = ActiveSupport::Cache.lookup_store :libmemcached_store, 'localhost', options
-    
-    assert_equal 'test', store.options[:prefix_key]
+
+    assert_equal 'test', store.instance_variable_get(:@cache).prefix_key
     assert_equal :modula, store.options[:distribution]
     assert_equal false, store.options[:no_block]
-    assert_equal false, store.options[:failover]
+    assert_equal false, store.options[:auto_eject_hosts]
   end
   
   def test_should_use_local_cache
