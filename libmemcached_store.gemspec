@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{libmemcached_store}
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeffrey Hardy"]
@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
      "lib/active_support/cache/compressed_libmemcached_store.rb",
      "lib/active_support/cache/libmemcached_store.rb",
      "lib/libmemcached_store.rb",
+     "libmemcached_store.gemspec",
      "test/libmemcached_store_test.rb"
   ]
   s.homepage = %q{http://github.com/37signals/libmemcached_store}

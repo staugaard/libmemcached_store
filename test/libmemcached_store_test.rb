@@ -3,7 +3,7 @@ require 'rubygems'
 require 'active_support'
 require 'memcached'
 
-require File.dirname(__FILE__) + '/../lib/active_support/cache/libmemcached_store'
+require File.dirname(__FILE__) + '/../lib/libmemcached_store'
 
 # Make it easier to get at the underlying cache options during testing.
 class ActiveSupport::Cache::LibmemcachedStore
