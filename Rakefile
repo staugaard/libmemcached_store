@@ -6,7 +6,7 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gemspec|
     gemspec.name = "libmemcached_store"
-    gemspec.version = '0.2.0'
+    gemspec.version = '0.2.1'
     gemspec.summary = "ActiveSupport::Cache wrapper for libmemcached "
     gemspec.description = "An ActiveSupport cache store that uses the C-based libmemcached client through
       Evan Weaver's Ruby/SWIG wrapper, memcached. libmemcached is fast, lightweight,
