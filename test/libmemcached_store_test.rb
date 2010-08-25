@@ -69,8 +69,8 @@ class LibmemcachedStoreTest < Test::Unit::TestCase
      @store.write('a', 1)
      @store.write('b', 2)
      
-     assert_equal({ 'a' => 1, 'b' => 2 }, @store.read_multi(['a', 'b', 'c']))
-     assert_equal({}, @store.read_multi([]))
+     assert_equal({ 'a' => 1, 'b' => 2 }, @store.read_multi('a', 'b', 'c'))
+     assert_equal({}, @store.read_multi())
    end
 
 end

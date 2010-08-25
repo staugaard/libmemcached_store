@@ -42,8 +42,8 @@ module ActiveSupport
         nil
       end
 
-      def read_multi(keys, options = nil)
-        read(keys, options) || {}
+      def read_multi(*keys)
+        read(keys) || {}
       end
 
       # Set the key to the given value. Pass :unless_exist => true if you want to
