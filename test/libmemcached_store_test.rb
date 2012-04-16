@@ -13,6 +13,7 @@ end
 class LibmemcachedStoreTest < Test::Unit::TestCase
   def setup
     @store = ActiveSupport::Cache.lookup_store :libmemcached_store
+    @store.clear
   end
 
   def test_should_identify_cache_store
@@ -72,5 +73,12 @@ class LibmemcachedStoreTest < Test::Unit::TestCase
      assert_equal({ 'a' => 1, 'b' => 2 }, @store.read_multi('a', 'b', 'c'))
      assert_equal({}, @store.read_multi())
    end
+
+  def test_should_fix_long_keys
+    key = ("0123456789" * 100).freeze
+    assert key.size > 250
+    @store.write(key, 1)
+    assert_equal 1, @store.read(key)
+  end
 
 end

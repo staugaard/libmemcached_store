@@ -1,4 +1,5 @@
 require 'memcached'
+require 'digest/sha1'
 
 class Memcached
   # The latest version of memcached (0.11) doesn't support hostnames with dashes
@@ -32,9 +33,21 @@ module ActiveSupport
         extend ActiveSupport::Cache::Strategy::LocalCache
       end
 
+      def valid_key(key)
+        if key.is_a?(Array)
+          key.map {|k| valid_key(k) }
+        else
+          if key && key.size > 250
+            "#{Digest::SHA1.hexdigest(key)}-autofixed"
+          else
+            key
+          end
+        end
+      end
+
       def read(key, options = nil)
         super
-        @cache.get(key, marshal?(options))
+        @cache.get(valid_key(key), marshal?(options))
       rescue Memcached::NotFound
         nil
       rescue Memcached::Error => e
@@ -51,7 +64,7 @@ module ActiveSupport
       def write(key, value, options = nil)
         super
         method = (options && options[:unless_exist]) ? :add : :set
-        @cache.send(method, key, value, expires_in(options), marshal?(options))
+        @cache.send(method, valid_key(key), value, expires_in(options), marshal?(options))
         true
       rescue Memcached::Error => e
         log_error(e)
@@ -60,7 +73,7 @@ module ActiveSupport
 
       def delete(key, options = nil)
         super
-        @cache.delete(key)
+        @cache.delete(valid_key(key))
         true
       rescue Memcached::NotFound
         nil
@@ -75,14 +88,14 @@ module ActiveSupport
 
       def increment(key, amount=1)
         log 'incrementing', key, amount
-        @cache.incr(key, amount)
+        @cache.incr(valid_key(key), amount)
       rescue Memcached::Error
         nil
       end
 
       def decrement(key, amount=1)
         log 'decrementing', key, amount
-        @cache.decr(key, amount)
+        @cache.decr(valid_key(key), amount)
       rescue Memcached::Error
         nil
       end
