@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = 'libmemcached_store'
-  s.version = '0.2.2'
+  s.version = '0.2.3'
 
   s.authors = ['Jeffrey Hardy']
   s.email   = ['packagethief@gmail.com']
