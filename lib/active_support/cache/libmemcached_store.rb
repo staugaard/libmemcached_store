@@ -63,7 +63,7 @@ module ActiveSupport
         @cache.delete(key)
         true
       rescue Memcached::NotFound
-        nil  
+        nil
       rescue Memcached::Error => e
         log_error(e)
         false
