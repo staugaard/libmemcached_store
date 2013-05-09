@@ -17,6 +17,8 @@ module ActiveSupport
     class LibmemcachedStore < Store
       attr_reader :addresses
 
+      ESCAPE_KEY_CHARS = /[\x00-\x20%\x7F-\xFF]/n
+
       DEFAULT_OPTIONS = {
         :distribution => :consistent,
         :no_block => true,
@@ -28,26 +30,22 @@ module ActiveSupport
         options = addresses.extract_options!
         addresses = %w(localhost) if addresses.empty?
 
+        if options[:prefix_key]
+          @namespace_length = options[:prefix_key].length
+          @namespace_length += options[:prefix_delimiter].length if options[:prefix_delimiter]
+        else
+          @namespace_length = 0
+        end
+
         @addresses = addresses
         @cache = Memcached.new(@addresses, options.reverse_merge(DEFAULT_OPTIONS))
         extend ActiveSupport::Cache::Strategy::LocalCache
       end
 
-      def valid_key(key)
-        if key.is_a?(Array)
-          key.map {|k| valid_key(k) }
-        else
-          if key && key.size > 250
-            "#{Digest::SHA1.hexdigest(key)}-autofixed"
-          else
-            key
-          end
-        end
-      end
-
       def read(key, options = nil)
+        key = expanded_key(key)
         super
-        @cache.get(valid_key(key), marshal?(options))
+        @cache.get(escape_and_normalize(key), marshal?(options))
       rescue Memcached::NotFound
         nil
       rescue Memcached::Error => e
@@ -55,16 +53,29 @@ module ActiveSupport
         nil
       end
 
-      def read_multi(*keys)
-        read(keys) || {}
+      def read_multi(*names)
+        names.flatten!
+        options = names.extract_options!
+
+        return {} if names.empty?
+
+        mapping = Hash[names.map {|name| [escape_and_normalize(expanded_key(name)), name] }]
+        raw_values = @cache.get(mapping.keys, marshal?(options))
+
+        values = {}
+        raw_values.each do |key, value|
+          values[mapping[key]] = value
+        end
+        values
       end
 
       # Set the key to the given value. Pass :unless_exist => true if you want to
       # skip setting a key that already exists.
       def write(key, value, options = nil)
+        key = expanded_key(key)
         super
         method = (options && options[:unless_exist]) ? :add : :set
-        @cache.send(method, valid_key(key), value, expires_in(options), marshal?(options))
+        @cache.send(method, escape_and_normalize(key), value, expires_in(options), marshal?(options))
         true
       rescue Memcached::Error => e
         log_error(e)
@@ -72,8 +83,9 @@ module ActiveSupport
       end
 
       def delete(key, options = nil)
+        key = expanded_key(key)
         super
-        @cache.delete(valid_key(key))
+        @cache.delete(escape_and_normalize(key))
         true
       rescue Memcached::NotFound
         nil
@@ -83,19 +95,22 @@ module ActiveSupport
       end
 
       def exist?(key, options = nil)
+        key = expanded_key(key)
         !read(key, options).nil?
       end
 
       def increment(key, amount=1)
+        key = expanded_key(key)
         log 'incrementing', key, amount
-        @cache.incr(valid_key(key), amount)
+        @cache.incr(escape_and_normalize(key), amount)
       rescue Memcached::Error
         nil
       end
 
       def decrement(key, amount=1)
+        key = expanded_key(key)
         log 'decrementing', key, amount
-        @cache.decr(valid_key(key), amount)
+        @cache.decr(escape_and_normalize(key), amount)
       rescue Memcached::Error
         nil
       end
@@ -123,6 +138,33 @@ module ActiveSupport
       end
 
       private
+
+        def escape_and_normalize(key)
+          key = key.to_s.dup.force_encoding("BINARY").gsub(ESCAPE_KEY_CHARS) { |match| "%#{match.getbyte(0).to_s(16).upcase}" }
+          key_length = key.length
+
+          return key if @namespace_length + key_length <= 250
+
+          max_key_length = 213 - @namespace_length
+          "#{key[0, max_key_length]}:md5:#{Digest::MD5.hexdigest(key)}"
+        end
+
+        def expanded_key(key) # :nodoc:
+          return key.cache_key.to_s if key.respond_to?(:cache_key)
+
+          case key
+          when Array
+            if key.size > 1
+              key = key.collect { |element| expanded_key(element) }
+            else
+              key = key.first
+            end
+          when Hash
+            key = key.sort_by { |k,_| k.to_s }.collect { |k, v| "#{k}=#{v}" }
+          end
+
+          key.to_param
+        end
 
         def expires_in(options)
           (options || {})[:expires_in] || 0
