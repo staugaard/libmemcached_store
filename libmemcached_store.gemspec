@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = 'libmemcached_store'
-  s.version = '0.2.3'
+  s.name = 'rails2_libmemcached_store'
+  s.version = '0.3.0'
 
   s.authors = ['Jeffrey Hardy']
   s.email   = ['packagethief@gmail.com']
