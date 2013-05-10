@@ -67,6 +67,11 @@ module ActiveSupport
           values[mapping[key]] = value
         end
         values
+      rescue Memcached::NotFound
+        {}
+      rescue Memcached::Error => e
+        log_error(e)
+        {}
       end
 
       # Set the key to the given value. Pass :unless_exist => true if you want to
