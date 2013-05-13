@@ -67,8 +67,6 @@ module ActiveSupport
           values[mapping[key]] = value
         end
         values
-      rescue Memcached::NotFound
-        {}
       rescue Memcached::Error => e
         log_error(e)
         {}
