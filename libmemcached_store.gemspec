@@ -15,6 +15,9 @@ Gem::Specification.new do |s|
   s.files         = Dir.glob('lib/**/*')
 
   s.add_development_dependency 'rake'
+  s.add_development_dependency 'minitest', '~> 4.7'
+  s.add_development_dependency 'timecop'
+  s.add_development_dependency 'iconv'
   s.add_dependency 'memcached'
   s.add_dependency 'activesupport', '< 3'
 end
