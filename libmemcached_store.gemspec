@@ -10,11 +10,9 @@ Gem::Specification.new do |s|
   s.description = %q{An ActiveSupport cache store that uses the C-based libmemcached client through
       Evan Weaver's Ruby/SWIG wrapper, memcached. libmemcached is fast, lightweight,
       and supports consistent hashing, non-blocking IO, and graceful server failover.}
-  s.homepage = 'http://github.com/37signals/libmemcached_store'
+  s.homepage = 'https://github.com/staugaard/libmemcached_store'
 
-  s.files         = Dir.glob('lib/**/*') + ['README']
-  s.test_files    = Dir.glob('test/**/*')
-  s.require_paths = ['lib']
+  s.files         = Dir.glob('lib/**/*')
 
   s.add_development_dependency 'rake'
   s.add_dependency 'memcached'
