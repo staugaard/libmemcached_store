@@ -58,6 +58,14 @@ module ActiveSupport
         extend ActiveSupport::Cache::Strategy::LocalCache
       end
 
+      def fetch(key, options={}, &block)
+        if options && options[:race_condition_ttl]
+          fetch_with_race_condition_ttl(key, options, &block)
+        else
+          super
+        end
+      end
+
       def fetch_with_race_condition_ttl(key, options={}, &block)
         options = options.dup
 
