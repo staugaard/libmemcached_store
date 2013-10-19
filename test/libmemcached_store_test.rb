@@ -89,7 +89,7 @@ describe ActiveSupport::Cache::LibmemcachedStore do
     let(:options) { {:expires_in => 1, :race_condition_ttl => 5} }
 
     def fetch(&block)
-      cache.fetch_with_race_condition_ttl("unknown", options, &block)
+      cache.fetch("unknown", options, &block)
     end
 
     after do
@@ -111,7 +111,6 @@ describe ActiveSupport::Cache::LibmemcachedStore do
         fetch { 3 }.must_equal 2 # 4th fetch still correct value
       end
     end
-
 
     it "can be read by a normal read" do
       fetch { 1 }
